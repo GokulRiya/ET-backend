@@ -9,14 +9,14 @@ const expenseRoutes = require("./routes/expenseRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 
 const app = express();
-app.use(
-    cors({
-        origin: [
-            "http://localhost:5173",
-            "https://et-frontend-eight.vercel.app"
-        ]
-    })
-);
+app.use(cors({
+    origin: [
+        'http://localhost:5173',
+        'https://et-frontend-eight.vercel.app'
+    ],
+    credentials: true
+}));
+app.use(express.json());
 app.use(express.json());
 
 // connect database
