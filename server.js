@@ -12,7 +12,7 @@ const app = express();
 app.use(cors({
     origin: [
         'http://localhost:5173',
-        'https://et-frontend-eight.vercel.app'
+        'https://expenslytic.vercel.app'
     ],
     credentials: true
 }));
