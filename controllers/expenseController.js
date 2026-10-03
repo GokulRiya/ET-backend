@@ -299,6 +299,22 @@ const getDashboardData = async (req, res) => {
             })
         );
 
+
+        let dayWise = expenses
+            .filter((expense) => expense.type === "expense")
+            .reduce((acc, expense) => {
+                const date = expense.date.toISOString().split("T")[0];
+                acc[date] = (acc[date] || 0) + expense.amount;
+                return acc;
+            }, {});
+
+        const dayWiseExpenses = Object.entries(dayWise).map(
+            ([name, value]) => ({
+                name,
+                value
+            })
+        );
+
         return res.status(200).json({
             success: true,
             data: {
@@ -306,7 +322,7 @@ const getDashboardData = async (req, res) => {
                 totalExpense,
                 balance,
                 chartData,
-                expenses: expenses.filter((expense) => expense.type === "expense")
+                expenses: dayWiseExpenses
             },
             message: "Dashboard data fetched successfully"
         });
