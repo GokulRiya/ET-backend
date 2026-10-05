@@ -9,6 +9,7 @@ const expenseRoutes = require("./routes/expenseRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 
 const app = express();
+
 app.use(cors({
     origin: [
         'http://localhost:5173',
@@ -16,11 +17,8 @@ app.use(cors({
     ],
     credentials: true
 }));
-app.use(express.json());
-app.use(express.json());
 
-// connect database
-connectDB();
+app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -35,8 +33,15 @@ app.get('/', (req, res) => {
     })
 });
 
-// connect server
 const port = process.env.PORT || 5000;
-app.listen(port, () => {
-    console.log(`Server port is running in ${port}`);
-});
+// connect database then server
+connectDB()
+    .then(() => {
+        app.listen(port, () => {
+            console.log(`Server port is running in ${port}`);
+        });
+    })
+    .catch(() => {
+        console.error('Database connection failed:', error);
+        process.exit(1);
+    });
