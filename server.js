@@ -3,6 +3,8 @@ const cors = require('cors');
 require('dotenv').config();
 
 const connectDB = require('./config/db');
+const cron = require("node-cron");
+const cleanupOldExpenses = require("./utils/cleanupExpenses");
 const authRoutes = require('./routes/authRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const expenseRoutes = require("./routes/expenseRoutes");
@@ -37,11 +39,19 @@ const port = process.env.PORT || 5000;
 // connect database then server
 connectDB()
     .then(() => {
+
+        // Monthly old expense cleanup
+        cron.schedule('* * * * *', async () => {
+            console.log('Running monthly expense cleanup...');
+
+            await cleanupOldExpenses();
+        });
+
         app.listen(port, () => {
             console.log(`Server port is running in ${port}`);
         });
     })
-    .catch(() => {
+    .catch((error) => {
         console.error('Database connection failed:', error);
         process.exit(1);
     });
