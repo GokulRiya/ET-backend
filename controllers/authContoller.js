@@ -45,26 +45,43 @@ const userRegister = async (req, res) => {
 // User login
 const userLogin = async (req, res) => {
     const { email, password } = req.body;
+
+    console.time("LOGIN TOTAL");
+
     try {
+        console.time("FIND USER");
         const user = await User.findOne({ email });
+        console.timeEnd("FIND USER");
+
         if (!user) {
+            console.timeEnd("LOGIN TOTAL");
+
             return res.status(401).json({
                 message: "Invalid credentials"
             });
         }
 
+        console.time("Password Compare");
         const match = await bcrypt.compare(password, user.password);
+        console.timeEnd("Password Compare");
+
         if (!match) {
+            console.timeEnd("LOGIN TOTAL");
+
             return res.status(401).json({
                 message: "Invalid credentials"
             });
         }
 
+        console.time("JWT");
         const token = jwt.sign(
             { user: user._id, role: user.role },
             secret_key,
-            { expiresIn: "4h" }
+            { expiresIn: "1m" }
         );
+        console.timeEnd("JWT");
+
+        console.timeEnd("LOGIN TOTAL");
 
         res.json({
             token,
@@ -72,13 +89,16 @@ const userLogin = async (req, res) => {
             email: user.email,
             name: user.name || ''
         });
+
     } catch (error) {
+        console.timeEnd("LOGIN TOTAL");
+
         res.status(500).json({
             message: "Server error",
             error: error.message
         });
     }
-}
+};
 
 // Get Users
 const getAllUsers = async (req, res) => {
