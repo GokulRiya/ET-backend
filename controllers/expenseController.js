@@ -1,6 +1,9 @@
 const Expense = require("../models/expenseModel");
 const Category = require("../models/categoryModel");
 
+const formatTransactionType = (type) =>
+    type === "income" ? "Income" : type === "expense" ? "Expense" : "Transaction";
+
 // Create Expense / Income
 const createExpense = async (req, res) => {
     const {
@@ -9,6 +12,8 @@ const createExpense = async (req, res) => {
         amount,
         description
     } = req.body;
+
+    let transactionType = "transaction";
 
     try {
 
@@ -25,6 +30,8 @@ const createExpense = async (req, res) => {
             });
         }
 
+        transactionType = category.type;
+
         // Type comes from category
         const expense = await Expense.create({
             userId: req.user._id,
@@ -37,14 +44,14 @@ const createExpense = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "Expense created successfully",
+            message: `${formatTransactionType(expense.type)} created successfully`,
             data: expense
         });
 
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: "Expense create failed",
+            message: `${formatTransactionType(transactionType)} create failed`,
             error: error.message
         });
     }
@@ -100,13 +107,13 @@ const getExpenses = async (req, res) => {
         return res.status(200).json({
             success: true,
             data: expenses,
-            message: "Expenses fetched successfully"
+            message: "Transactions fetched successfully"
         });
 
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: "Expense fetch failed",
+            message: "Transaction fetch failed",
             error: error.message
         });
     }
@@ -124,7 +131,7 @@ const getExpenseById = async (req, res) => {
         if (!expense) {
             return res.status(404).json({
                 success: false,
-                message: "Expense not found"
+                message: "Transaction not found"
             });
         }
 
@@ -136,7 +143,7 @@ const getExpenseById = async (req, res) => {
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: "Failed to fetch expense",
+            message: "Failed to fetch transaction",
             error: error.message
         });
     }
@@ -150,6 +157,8 @@ const updateExpense = async (req, res) => {
         amount,
         description
     } = req.body;
+
+    let transactionType = "transaction";
 
     try {
 
@@ -166,6 +175,8 @@ const updateExpense = async (req, res) => {
             });
         }
 
+        transactionType = expense.type;
+
         // Check new category
         const category = await Category.findOne({
             _id: categoryId,
@@ -179,6 +190,7 @@ const updateExpense = async (req, res) => {
             });
         }
 
+        transactionType = category.type;
         expense.categoryId = category._id;
         expense.type = category.type;
         expense.date = date;
@@ -189,14 +201,14 @@ const updateExpense = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Transaction updated successfully",
+            message: `${formatTransactionType(expense.type)} updated successfully`,
             data: expense
         });
 
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: "Transaction update failed",
+            message: `${formatTransactionType(transactionType)} update failed`,
             error: error.message
         });
     }
@@ -204,7 +216,23 @@ const updateExpense = async (req, res) => {
 
 // Delete Expense
 const deleteExpense = async (req, res) => {
+    let transactionType = "transaction";
+
     try {
+
+        const existingExpense = await Expense.findOne({
+            _id: req.params.id,
+            userId: req.user._id
+        });
+
+        if (!existingExpense) {
+            return res.status(404).json({
+                success: false,
+                message: "Transaction not found"
+            });
+        }
+
+        transactionType = existingExpense.type;
 
         const expense = await Expense.findOneAndDelete({
             _id: req.params.id,
@@ -214,19 +242,20 @@ const deleteExpense = async (req, res) => {
         if (!expense) {
             return res.status(404).json({
                 success: false,
-                message: "Expense not found"
+                message: "Transaction not found"
             });
         }
 
         return res.status(200).json({
             success: true,
-            message: "Expense deleted successfully"
+            message: `${formatTransactionType(expense.type)} deleted successfully`,
+            data: { type: expense.type }
         });
 
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: "Expense delete failed",
+            message: `${formatTransactionType(transactionType)} delete failed`,
             error: error.message
         });
     }
