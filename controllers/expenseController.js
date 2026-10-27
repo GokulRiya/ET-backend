@@ -62,6 +62,14 @@ const getExpenses = async (req, res) => {
     try {
         const search = req.query.search?.trim();
         const filter = { userId: req.user._id };
+
+        // Get page and limit from frontend
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 10;
+
+        // Calculate how many records to skip
+        const skip = (page - 1) * limit;
+
         // month
         const month = req.query.month;
         if (month) {
@@ -99,14 +107,20 @@ const getExpenses = async (req, res) => {
                 filter.$or.push({ amount });
             }
         }
-
+        const totalExpenses = (await Expense.find(filter)).length;
         const expenses = await Expense.find(filter)
             .populate("categoryId", "categoryName type")
-            .sort({ date: -1 });
+            .sort({ date: -1 }).skip(skip).limit(limit);
 
         return res.status(200).json({
             success: true,
             data: expenses,
+            data: {
+                res: expenses,
+                page: page,
+                totalPages: Math.ceil(totalExpenses / limit),
+                totalExpenses
+            },
             message: "Transactions fetched successfully"
         });
 

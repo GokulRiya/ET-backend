@@ -59,7 +59,7 @@ const getCategory = async (req, res) => {
                 { type: { $regex: search, $options: "i" } }
             ]
         }
-        const totalCategories = await Category.countDocuments();
+        const totalCategories = (await Category.find(filter)).length;
         const category = await Category.find(filter).sort({ _id: 1 }).skip(skip).limit(limit);
 
         res.status(200).json({
