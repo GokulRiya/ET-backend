@@ -43,21 +43,33 @@ const getCategory = async (req, res) => {
 
         const { search } = req.query;
 
+        // Get page and limit from frontend
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 10;
+
+        // Calculate how many records to skip
+        const skip = (page - 1) * limit;
+
         const filter = {
             userId: req.user._id,
         }
         if (search) {
             filter.$or = [
-                { categoryName: { $regex: search, $options: "i" }},
+                { categoryName: { $regex: search, $options: "i" } },
                 { type: { $regex: search, $options: "i" } }
             ]
         }
-
-        const category = await Category.find(filter);
+        const totalCategories = await Category.countDocuments();
+        const category = await Category.find(filter).sort({ _id: 1 }).skip(skip).limit(limit);
 
         res.status(200).json({
             success: true,
-            data: category,
+            data: {
+                res: category,
+                page: page,
+                totalPages: Math.ceil(totalCategories / limit),
+                totalCategories
+            },
             message: "Category fetch successfully"
         })
     } catch (error) {
