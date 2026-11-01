@@ -40,7 +40,10 @@ const createCategory = async (req, res) => {
 // Get All
 const getAllCategory = async (req, res) => {
     try {
-        const categories = await Category.find();
+        const filter = {
+            userId: req.user._id,
+        }
+        const categories = await Category.find(filter);
         res.status(200).json({
             success: true,
             data: categories,
