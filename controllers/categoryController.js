@@ -38,6 +38,23 @@ const createCategory = async (req, res) => {
 }
 
 // Get All
+const getAllCategory = async (req, res) => {
+    try {
+        const categories = await Category.find();
+        res.status(200).json({
+            success: true,
+            data: categories,
+            message: "Category fetched successfully"
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Category fetch failed",
+            error: error.message
+        });
+    }
+}
+
 const getCategory = async (req, res) => {
     try {
 
@@ -175,4 +192,4 @@ const deleteCategory = async (req, res) => {
     }
 }
 
-module.exports = { createCategory, getCategory, updateCategory, getCategoryById, deleteCategory }
+module.exports = { createCategory, getAllCategory, getCategory, updateCategory, getCategoryById, deleteCategory }

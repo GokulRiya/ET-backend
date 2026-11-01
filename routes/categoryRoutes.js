@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
 
-const { createCategory, getCategory, updateCategory, getCategoryById, deleteCategory } = require('../controllers/categoryController');
+const { createCategory, getAllCategory, getCategory, updateCategory, getCategoryById, deleteCategory } = require('../controllers/categoryController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 // Get all
+router.get('/categoryAll', authMiddleware, getAllCategory);
+
+// Get page wise
 router.get('/', authMiddleware, getCategory);
 
 // Create
